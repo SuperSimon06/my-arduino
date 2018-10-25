@@ -1,7 +1,7 @@
 
-int redPin = 9;
-int greenPin = 10;
-int bluePin = 11;
+int redPin = 5;
+int greenPin = 3;
+int bluePin = 9;
 
 void setup() 
 {

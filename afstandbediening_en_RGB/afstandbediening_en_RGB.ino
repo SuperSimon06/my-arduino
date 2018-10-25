@@ -1,12 +1,12 @@
 #include <IRremote.h>
 
-int redPin = 6;
-int greenPin = 3;
+int redPin = 10;
+int greenPin = 5;
 int bluePin = 9;
 int RECV_PIN = 11; //define input pin on Arduino
 int welkewasingedrukt = -1;
-int stapgrootte = 254;
-
+int stapgrootte = 5;
+int benedenofomhoog = 0;
 int kleur[3];
 
 IRrecv irrecv(RECV_PIN);
@@ -40,30 +40,45 @@ void loop() {
     switch (results.value) {
        case 0xff30cf://1
          welkewasingedrukt = 0;
+         benedenofomhoog = 0;
          break;
        case 0xff18e7://2
          welkewasingedrukt = 1;
+         benedenofomhoog = 0;
          break;
        case 0xff7a85://3
          welkewasingedrukt = 2;
+         benedenofomhoog = 0;
          break;
        case 0xff906f: // volume up
+         benedenofomhoog = 1;
          kleur[welkewasingedrukt] += stapgrootte;
          if (kleur[welkewasingedrukt] > 255) 
            kleur[welkewasingedrukt] = 255;
          setColor(kleur[0], kleur[1], kleur[2]);
          break;
        case 0xffe01f: // volume down
+         benedenofomhoog = 2;
          kleur[welkewasingedrukt] -= stapgrootte;
          if (kleur[welkewasingedrukt] < 0) 
            kleur[welkewasingedrukt] = 0;
          setColor(kleur[0], kleur[1], kleur[2]);
          break;
+       case 0xffffffff:
+         if (benedenofomhoog == 2)
+           kleur[welkewasingedrukt] -= stapgrootte;
+           if (kleur[welkewasingedrukt] < 0) 
+            kleur[welkewasingedrukt] = 0;
+         if (benedenofomhoog == 1)
+           kleur[welkewasingedrukt] += stapgrootte;
+           if (kleur[welkewasingedrukt] > 255) 
+             kleur[welkewasingedrukt] = 255;
+         setColor(kleur[0], kleur[1], kleur[2]);
+         break;
+         
       
     }
    
     irrecv.resume(); // Receive the next value
   }
 }
-
-

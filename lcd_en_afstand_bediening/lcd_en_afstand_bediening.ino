@@ -63,68 +63,67 @@ void setup() {
   irrecv.enableIRIn(); // Start the receiver
 }
 
+void legelcd (int rij, int plaats){
+  lcd.setCursor(0,0);
+  lcd.print("                ");
+  lcd.setCursor(0,1);
+  lcd.print("                ");
+  lcd.setCursor(rij,plaats);
+  
+}
 void loop() {
   // set the cursor to column 0, line 1
   // (note: line 1 is the second row, since counting begins with 0):
   if (irrecv.decode(&results)) {
     Serial.println(results.value, HEX);
     lcd.setCursor(0, 0);
+    if(results.value != 0xffffffff){
+      legelcd(0,0);
+    }
     switch (results.value) {
          case 0xff30cf://1
            lcd.print("het was 1,toch");
-           lcd.setCursor(0, 0);
            break;
          case 0xff18e7://2
            lcd.print("doe normaal");
            lcd.setCursor(0,1);
            lcd.print("MAARTEN");
-           lcd.setCursor(0,0);
-           lcd.setCursor(0,1);
            break;
          case 0xff7a85://3
            lcd.print("23-5-14");
-           lcd.setCursor(0,0);
            break;
          case 0xff10ef://4
            lcd.print("JE STINKT");
-           lcd.setCursor(0,0);
            break;
          case 0xff38c7://5
            lcd.print("2+3");
-           lcd.setCursor(0,0);
            break;
          case 0xff5aa5://6
            lcd.print("je drukte (1+2");
            lcd.setCursor(0,1);
            lcd.print("+3+4+5+6):3-1 in");
-           lcd.setCursor(0,0);
-           lcd.setCursor(0,1);
            break;
          case 0xff42bd://7
            lcd.print("18x17-1023=");
-           lcd.setCursor(0,0);
            break;
          case 0xff4ab5://8
            lcd.print("HELLO, WORLD");
-           lcd.setCursor(0,0);
            break;
          case 0xff52ad://9
            lcd.print("EXPLODEERT IN");
-           lcd.setCursor(0, 0);
+           lcd.setCursor(0, 1);
            lcd.print("3");
-           lcd.setCursor(0,0);
+           lcd.setCursor(0,1);
            delay(1000);
            lcd.print("2");
-           lcd.setCursor(0,0);
+           lcd.setCursor(0,1);
            delay(1000);
            lcd.print("1");
-           lcd.setCursor(0,0);
            delay(1000);
+           legelcd(0,0);
            lcd.print("ERROR:");
            lcd.setCursor(0,1);
            lcd.print("springstof is op");
-           lcd.setCursor(0,0);
-           lcd.setCursor(0,1);
            break;
     }
     irrecv.resume(); // Receive the next value

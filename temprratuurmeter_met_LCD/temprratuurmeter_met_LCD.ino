@@ -5,7 +5,10 @@ const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 9, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 
+#define DHTTYPE    DHT11     // DHT 11
 #define DHT11_PIN 7
+DHT dht(DHT11_PIN, DHTTYPE);
+
 
 void setup(){
   Serial.begin(9600);
@@ -17,17 +20,14 @@ void loop()
 {
   delay(2000);
   float vochtinlucht = dht.readHumidity();
-  float temp°c = dht.readTemperature();
-  if (isnan(h) || isnan(t) || isnan(f)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
+  float tempc = dht.readTemperature();
+  
   lcd.setCursor(0,0); 
   lcd.print("Temp.in°c: ");
-  lcd.print(temp°c);
+  lcd.print(tempc);
   lcd.setCursor(0,1);
   lcd.print("humidity: ");
-  lcd.print(vochtinlucht)
-  lcd.print(%)
+  lcd.print(vochtinlucht);
+  lcd.print("%");
 }
 

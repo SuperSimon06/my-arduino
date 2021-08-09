@@ -1,9 +1,9 @@
 #include <IRremote.h>
 
-int redPin = 10;
+int redPin = 9;
 int greenPin = 5;
-int bluePin = 9;
-int RECV_PIN = 11; //define input pin on Arduino
+int bluePin = 10;
+int RECV_PIN = 0; //define input pin on Arduino
 int welkewasingedrukt = -1;
 int stapgrootte = 5;
 int benedenofomhoog = 0;

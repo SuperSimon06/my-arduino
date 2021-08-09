@@ -220,12 +220,12 @@ void nakijken () {
     if (c == 90){
       nieuwelampnodig = 1;
       punten++;
-      //goedgeluid();
+      goedgeluid();
       Serial.println("goed");
     }
     else if (c != 0){
       punten--;
-      //foutgeluid();
+      foutgeluid();
       Serial.println("fout");
     }
     IrReceiver.resume(); // Receive the next value

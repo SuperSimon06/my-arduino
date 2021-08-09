@@ -2,7 +2,7 @@
 #include <TimeLib.h>
 #include <IRremote.h>
 
-const int ontvanger = 0;
+const byte IR_RECEIVE_PIN = 0;
 const int lamp1 = 13;
 const int lamp2 = 2;
 const int lamp3 = 3;
@@ -16,7 +16,7 @@ const int rgbrood = 9;
 const int rgbblauw = 11;
 const int passivebuzzer = 10;
 int lamp5 = -1;
-decode_results codes[14];
+int codes[14];
 #define GEEL 0
 #define ROOD 1
 #define GROEN 2
@@ -36,8 +36,6 @@ byte brandendelampjes[4];
 byte nieuwelampnodig = 1;
 int punten = 0;
 time_t start;
-IRrecv irrecv(ontvanger);
-decode_results results;
 int allelampjes[] = {lamp1,lamp2,lamp3,lamp4,lamp5,lamp6,lamp7,lamp8,lamp9};
 int startsecond;
 int endsecond;
@@ -65,6 +63,7 @@ void restmaker(const byte gekozenkleur){
 
 void lampmaker(const byte gekozenkleur){
   delamp = allekleuren[gekozenkleur][random (2)];
+  Serial.println(delamp);
 }
 
 void setColor(int red, int green, int blue){
@@ -90,18 +89,20 @@ void lampjeswisselaar(int waarde){
 }
 
 void goedgeluid() {
-  tone(passivebuzzer,440);
-  delay(500);
-  noTone(passivebuzzer);
+  //tone(passivebuzzer,440);
+  //delay(500);
+  //noTone(passivebuzzer);
 }
 
 void foutgeluid() {
-  tone(passivebuzzer,220);
-  delay(500);
-  noTone(passivebuzzer);
+  //tone(passivebuzzer,220);
+  //delay(500);
+  //noTone(passivebuzzer);
 }
 
 void intro() {
+  foutgeluid();
+  goedgeluid();
   digitalWrite (lamp1,HIGH);
   delay(200);
   digitalWrite (lamp1,LOW);
@@ -211,18 +212,23 @@ void zetnieuwekleur() {
 }
 
 void nakijken () {
-  if (irrecv.decode(&results)) {
-    //Serial.println(results.value, HEX);
-    if (results.value == codes[delamp].value){
+  if (IrReceiver.decode()) {
+    int c =IrReceiver.decodedIRData.command;
+    Serial.println(IrReceiver.decodedIRData.command);
+    Serial.println(c);
+//    if (c == codes[delamp]){
+    if (c == 90){
       nieuwelampnodig = 1;
       punten++;
-      goedgeluid();
+      //goedgeluid();
+      Serial.println("goed");
     }
-    else if (results.value != 0xffffffff){
+    else if (c != 0){
       punten--;
-      foutgeluid();
+      //foutgeluid();
+      Serial.println("fout");
     }
-    irrecv.resume(); // Receive the next value
+    IrReceiver.resume(); // Receive the next value
   }
 }
 
@@ -299,10 +305,10 @@ void getallenbrander(byte getal){
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Doe maar iets");
-  irrecv.enableIRIn(); // Start the receiver
-  pinMode(rgbrood, OUTPUT);
+  IrReceiver.begin(IR_RECEIVE_PIN, DISABLE_LED_FEEDBACK);
+  /*pinMode(rgbrood, OUTPUT);
   pinMode(rgbblauw, OUTPUT);
   pinMode(rgbgroen, OUTPUT);
   pinMode(lamp1, OUTPUT);
@@ -313,39 +319,39 @@ void setup() {
   pinMode(lamp7, OUTPUT);
   pinMode(lamp8, OUTPUT);
   pinMode(lamp9, OUTPUT);
-  pinMode(passivebuzzer, OUTPUT);
-  codes[lamp1].value = 0xff30cf;
-  codes[lamp2].value = 0xff18e7;
-  codes[lamp3].value = 0xff7a85;
-  codes[lamp4].value = 0xff10ef;
-  codes[lamp6].value = 0xff5aa5;
-  codes[lamp7].value = 0xff42bd;
-  codes[lamp8].value = 0xff4ab5;
-  codes[lamp9].value = 0xff52ad;
+  //pinMode(passivebuzzer, OUTPUT);
+  codes[lamp1] = 12;
+  codes[lamp2] = 24;
+  codes[lamp3] = 94;
+  codes[lamp4] = 8;
+  codes[lamp6] = 90;
+  codes[lamp7] = 66;
+  codes[lamp8] = 82;
+  codes[lamp9] = 74;
   brandendelampjes[0] = lamp1;
   brandendelampjes[1] = lamp1;
   brandendelampjes[2] = lamp1;
   brandendelampjes[3] = lamp1;
   intro();
   int seed = analogRead(12);
-  Serial.println(seed);
+  //Serial.println(seed);
   randomSeed(seed);
   start = now();
   startsecond = second(start);
-  endsecond = (startsecond + 30) % 60;
-  Serial.print("start = ");
-  Serial.println(startsecond);
+  endsecond = (startsecond + 30) % 60;*/
+  //Serial.print("start = ");
+  //Serial.println(startsecond);
   punten = 0;
 }
 
 void loop() {
-  if (nieuwelampnodig == 1){
+   /*if (nieuwelampnodig == 1){
     lampjeswisselaar(0);
     zetnieuwekleur();
     lampjeswisselaar(255);
     nieuwelampnodig = 0;
-  }
+  }*/
   nakijken();
-  tijdkijker();
+  //tijdkijker();
   //Serial.println(tijdmeting);
 }

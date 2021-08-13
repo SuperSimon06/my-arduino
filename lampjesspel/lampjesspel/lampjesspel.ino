@@ -1,5 +1,5 @@
-#include <Time.h>
-#include <TimeLib.h>
+//#include <Time.h>
+//#include <TimeLib.h>
 #include <IRremote.h>
 
 const byte IR_RECEIVE_PIN = 0;
@@ -8,11 +8,11 @@ const int lamp2 = 2;
 const int lamp3 = 3;
 const int lamp4 = 4;
 const int lamp6 = 12;
-const int lamp7 = 6;
+const int lamp7 = 9; // was 6
 const int lamp8 = 7;
 const int lamp9 = 8;
 const int rgbgroen = 5;
-const int rgbrood = 9;
+const int rgbrood = 6;// was 9
 const int rgbblauw = 11;
 const int passivebuzzer = 10;
 int lamp5 = -1;
@@ -35,10 +35,13 @@ byte derest[6];
 byte brandendelampjes[4];
 byte nieuwelampnodig = 1;
 int punten = 0;
-time_t start;
+unsigned long start;
 int allelampjes[] = {lamp1,lamp2,lamp3,lamp4,lamp5,lamp6,lamp7,lamp8,lamp9};
 int startsecond;
 int endsecond;
+unsigned long goedgeluideinde;
+unsigned long foutgeluideinde;
+unsigned long vorigsignaaltijd;
 
 //void(* resetFunc) (void) = 0;
 
@@ -89,20 +92,25 @@ void lampjeswisselaar(int waarde){
 }
 
 void goedgeluid() {
-  //tone(passivebuzzer,440);
-  //delay(500);
-  //noTone(passivebuzzer);
+  tone(passivebuzzer,440);
+  goedgeluideinde = millis();
 }
 
 void foutgeluid() {
-  //tone(passivebuzzer,220);
-  //delay(500);
-  //noTone(passivebuzzer);
+  tone(passivebuzzer,220);
+  foutgeluideinde = millis();
+}
+
+void checkdelays() {
+  if (millis() - foutgeluideinde == 250 || millis() - foutgeluideinde - 1 == 250 || millis() - foutgeluideinde + 1 == 250) {
+    noTone(passivebuzzer);
+  }
+  if (millis() - goedgeluideinde == 250 || millis() - goedgeluideinde - 1 == 250 || millis() - goedgeluideinde + 1 == 250) {
+    noTone(passivebuzzer);
+  }
 }
 
 void intro() {
-  foutgeluid();
-  goedgeluid();
   digitalWrite (lamp1,HIGH);
   delay(200);
   digitalWrite (lamp1,LOW);
@@ -181,8 +189,6 @@ void intro() {
   digitalWrite (lamp4,LOW);
   delay(100);
   digitalWrite (lamp1,LOW);
-  delay(100);
-  
 }
 
 void zetnieuwekleur() {
@@ -214,21 +220,23 @@ void zetnieuwekleur() {
 void nakijken () {
   if (IrReceiver.decode()) {
     int c =IrReceiver.decodedIRData.command;
-    Serial.println(IrReceiver.decodedIRData.command);
+    Serial.print("signaal is :");
     Serial.println(c);
-//    if (c == codes[delamp]){
-    if (c == 90){
+    IrReceiver.resume(); // Receive the next value
+    if (c == codes[delamp]){
+//    if (c == 90){
       nieuwelampnodig = 1;
       punten++;
       goedgeluid();
       Serial.println("goed");
     }
-    else if (c != 0){
+    else if (c != 0 && millis() - vorigsignaaltijd >= 200){
       punten--;
       foutgeluid();
       Serial.println("fout");
     }
-    IrReceiver.resume(); // Receive the next value
+    vorigsignaaltijd = millis();
+    Serial.println(millis());
   }
 }
 
@@ -242,10 +250,11 @@ void allesuit() {
   digitalWrite(lamp7,LOW);
   digitalWrite(lamp8,LOW);
   digitalWrite(lamp9,LOW);
+  noTone(passivebuzzer);
 }
 
 void tijdkijker(){
-  if (endsecond == second()){
+  if (millis() - start == 30000){
     allesuit();
     //Serial.println(punten);
     getallenbrander(punten);
@@ -305,10 +314,11 @@ void getallenbrander(byte getal){
 
 void setup() {
   // put your setup code here, to run once:
+  intro();
   Serial.begin(115200);
   Serial.println("Doe maar iets");
   IrReceiver.begin(IR_RECEIVE_PIN, DISABLE_LED_FEEDBACK);
-  /*pinMode(rgbrood, OUTPUT);
+  pinMode(rgbrood, OUTPUT);
   pinMode(rgbblauw, OUTPUT);
   pinMode(rgbgroen, OUTPUT);
   pinMode(lamp1, OUTPUT);
@@ -332,26 +342,23 @@ void setup() {
   brandendelampjes[1] = lamp1;
   brandendelampjes[2] = lamp1;
   brandendelampjes[3] = lamp1;
-  intro();
   int seed = analogRead(12);
   //Serial.println(seed);
   randomSeed(seed);
-  start = now();
-  startsecond = second(start);
-  endsecond = (startsecond + 30) % 60;*/
-  //Serial.print("start = ");
-  //Serial.println(startsecond);
   punten = 0;
+  start = millis();
 }
 
 void loop() {
-   /*if (nieuwelampnodig == 1){
+   if (nieuwelampnodig == 1){
     lampjeswisselaar(0);
     zetnieuwekleur();
     lampjeswisselaar(255);
     nieuwelampnodig = 0;
-  }*/
+  }
   nakijken();
-  //tijdkijker();
+  tijdkijker();
+  //Serial.println(millis());
+  checkdelays();
   //Serial.println(tijdmeting);
 }
